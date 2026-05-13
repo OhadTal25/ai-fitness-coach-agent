@@ -18,7 +18,7 @@ The system acts as a personal fitness assistant that can onboard users, remember
 
 ## Architecture
 
-![Architecture](assets/Architecture.png)
+![Main Workflow](assets/main-workflow.png)
 
 ## Tech Stack
 
