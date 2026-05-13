@@ -24,12 +24,13 @@ The system acts as a personal fitness assistant that can onboard users, remember
 
 - n8n
 - LLM (Gemini)
-- Telegram Bot API
 - Supabase
 - Supabase Vector Store
 - OpenAI Embeddings
+- RAG
 - Skills
 - Tools
+- Telegram Bot API
 - JavaScript Code Nodes
 
 ## Workflows
