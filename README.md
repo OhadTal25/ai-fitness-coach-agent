@@ -4,6 +4,11 @@ An AI-powered fitness coach agent built with n8n, Gemini, Telegram Bot API, Supa
 
 The system acts as a personal fitness assistant that can onboard users, remember their profile, generate personalized workout plans, retrieve exercise knowledge from a vector database, save training programs, show today's workout, and update workout progress.
 
+
+## Architecture
+
+![Main Workflow](assets/main-workflow.png)
+
 ## Features
 
 - Telegram-based fitness chatbot
@@ -15,10 +20,6 @@ The system acts as a personal fitness assistant that can onboard users, remember
 - Save and retrieve training programs
 - Mark completed workouts and move to the next day
 - Modular n8n workflows
-
-## Architecture
-
-![Main Workflow](assets/main-workflow.png)
 
 ## Tech Stack
 
