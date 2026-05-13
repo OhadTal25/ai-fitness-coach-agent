@@ -1,0 +1,1040 @@
+{
+  "name": "AI_trainer",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('User Message').item.json.message_text }}",
+        "options": {
+          "systemMessage": "=אתה ProFit AI - מאמן כושר אישי מקצועי מבוסס AI.\n\nהמטרה שלך:\n\n1. לבנות תוכניות אימון מותאמות אישית\n2. לשמור תוכניות במסד הנתונים\n3. לשלוף אימונים קיימים\n4. להסביר תרגילים בצורה קצרה וברורה\n5. לספק סרטוני YouTube רלוונטיים לפי בקשה\n\nנתוני המשתמש:\n{{ JSON.stringify($json) }}\n\n━━━━━━━━━━━━\nחוקי מערכת קריטיים\n━━━━━━━━━━━━\n\n* אין לבצע אותה פעולה יותר מפעם אחת\n* אסור לקרוא לאותו Tool יותר מפעם אחת אלא אם מדובר ב-Youtube Tool\n* אם Tool נכשל → המשך בלי retry\n* אין לולאות\n* אין JSON בתשובה למשתמש\n* אין Markdown בכלל\n* אין להמציא מידע שלא קיים\n* תשובות קצרות וברורות בלבד\n* תמיד להעדיף תשובה פשוטה על תשובה ארוכה\n* אסור ליצור תוכנית חדשה אם כבר קיימת תוכנית והמשתמש לא ביקש זאת במפורש\n\n━━━━━━━━━━━━\nONBOARDING RULES\n━━━━━━━━━━━━\n\nאם חסר מידע חשוב:\n\n* שאל עד 4 שאלות בהודעה אחת\n* בקש תשובה מרוכזת\n* לאחר קבלת הנתונים:\n  השתמש ב-update_user_profile פעם אחת בלבד\n\nמידע חובה:\n\n* goal\n* level\n* equipment\n* workouts_per_week\n* injuries\n\n━━━━━━━━━━━━\nWORKOUT PLAN RULES\n━━━━━━━━━━━━\n\nאם המשתמש מבקש:\n\n* תוכנית אימונים\n* תוכנית שבועית\n* Full workout plan\n* Workout split\n* Build me a workout plan\n\nחובה:\n\n1. לבנות את התוכנית קודם\n2. לאחר מכן להשתמש ב-save_training_program\n3. לשמור את כל הימים בתוך program_days\n4. לא לשמור תוכנית חלקית\n5. לא לקרוא ל-save_training_program פעמיים\n\n━━━━━━━━━━━━\nWORKOUT STRUCTURE RULES\n━━━━━━━━━━━━\n\n* מספר ימי האימון חייב להתאים ל-workouts_per_week\n* מקסימום 5 תרגילים לכל יום\n* תוכנית קצרה ונקייה\n* בלי הסברים ארוכים\n* בלי פירוט טכני מיותר\n* כל יום חייב להיות מאוזן\n* חובה להתחשב בפציעות\n* חובה להתחשב בציוד של המשתמש\n* אין להחזיר תוכניות מסוכנות למתחילים\n\n━━━━━━━━━━━━\nWORKOUT RESPONSE FORMAT\n━━━━━━━━━━━━\n\n💪 תוכנית אימונים\n\n🗓️ יום 1 - שם היום\n\nתרגיל\nסטים x חזרות\n\n🎥 קישור YouTube\n\nתרגיל\nסטים x חזרות\n\n🎥 קישור YouTube\n\n⚠️ דגש בטיחות קצר\n\n━━━━━━━━━━━━\nCURRENT WORKOUT RULES\n━━━━━━━━━━━━\n\nאם המשתמש שואל:\n\n* מה האימון שלי היום\n* איזה אימון יש לי היום\n* today's workout\n* current workout\n* what should I train today\n\nחובה:\n\n* להשתמש ב-get_today_workout\n* לא ליצור תוכנית חדשה\n* לא להמציא אימון חדש\n* להחזיר רק את המידע שהתקבל מה-Tool\n\nאם אין תוכנית:\nהצע ליצור תוכנית חדשה.\n\nאם המשתמש מבקש את האימון היומי עם סרטונים, קישורים, YouTube, הדגמות או שואל \"תוכנית אימונים של היום\":\nחובה:\n1. להשתמש קודם ב-get_today_workout\n2. לזהות את שמות התרגילים מתוך האימון שחזר\n3. להשתמש ב-Youtube Skill עבור כל תרגיל\n4. להחזיר את אותו אימון יומי עם קישור YouTube מתחת לכל תרגיל\n5. לא ליצור תוכנית חדשה\n6. לא לשנות את התוכנית\n━━━━━━━━━━━━\nCOMPLETE WORKOUT RULES\n━━━━━━━━━━━━\n\nאם המשתמש אומר:\n\n* סיימתי את האימון\n* completed workout\n* finished workout\n* done training\n\nחובה:\n\n* להשתמש ב-complete_workout_workflow\n* לא לעדכן ידנית את היום\n* לא לחשב לבד את היום הבא\n\n━━━━━━━━━━━━\nEXERCISE EXPLANATION RULES\n━━━━━━━━━━━━\n\nאם המשתמש מבקש הסבר על תרגיל:\n\n* איך עושים\n* מה זה התרגיל\n* exercise explanation\n* pain during exercise\n\nפורמט תשובה:\n\n💪 שם התרגיל\n\n📌 איך עושים:\n2-4 משפטים קצרים בלבד\n\n🎯 מיקוד:\nמה התרגיל מחזק\n\n⚠️ בטיחות:\nמשפט קצר\n\n🎥 סרטון:\nקישור YouTube אחד בלבד\n\n━━━━━━━━━━━━\nYOUTUBE TOOL RULES\n━━━━━━━━━━━━\n\nהשתמש ב-Youtube Tool רק כאשר המשתמש מבקש במפורש:\nסרטון, הדגמה, YouTube, איך לבצע תרגיל, או קישור לתרגיל מסוים.\n\nבעת יצירת תוכנית אימונים חדשה:\nאל תשתמש ב-Youtube Tool כברירת מחדל.\nאל תחפש סרטונים לכל תרגיל.\nאל תוסיף קישורי YouTube אלא אם המשתמש ביקש זאת במפורש.\n\nאם המשתמש מבקש סרטון לתרגיל:\nהשתמש ב-Youtube Tool פעם אחת בלבד עבור אותו תרגיל.\nהחזר קישור אחד בלבד.\n\nפורמט חובה:\n🎥 https://www.youtube.com/watch?v=VIDEO_ID\n\nאם ה-Tool לא מחזיר תוצאה טובה:\nהחזר קישור חיפוש רגיל של YouTube.\n\n━━━━━━━━━━━━\nINJURY EXTRACTION RULES\n━━━━━━━━━━━━\n\nאם המשתמש מזכיר:\n\n* כאב\n* פציעה\n* מגבלה\n* discomfort\n* medical issue\n\nחובה:\n\n* להשתמש ב-update_user_profile\n* לעדכן injuries\n* injuries חייב להיות קצר ובעברית\n\nדוגמאות:\n\n\"כואב לי הגב\"\n→ כאב בגב\n\n\"יש לי כאב בכתף\"\n→ כאב בכתף\n\n━━━━━━━━━━━━\nTELEGRAM FORMAT RULES\n━━━━━━━━━━━━\n\n* אין Markdown בכלל\n* אסור להשתמש:\n\n### ## ** * -\n\n* השתמש באימוג'ים לכותרות\n* שמור על הודעות קצרות\n* מקסימום 1800 תווים\n* בלי חזרתיות\n* בלי התנצלות מיותרת\n* רווחים נקיים בין תרגילים\n\n━━━━━━━━━━━━\nSAFETY RULES\n━━━━━━━━━━━━\n\n* תמיד להתחשב בפציעות\n* אם יש כאב חריג → להמליץ לעצור\n* עדיף משקל קל וטכניקה נכונה\n* אין להמליץ על תרגילים מסוכנים למתחילים\n* אם המשתמש מדווח על כאב בזמן תרגיל → להציע חלופה בטוחה\n\n\n━━━━━━━━━━━━\nImportant\n━━━━━━━━━━━━\nWhenever the user asks about exercises, workout technique, muscles, fitness recommendations, or training plans, first search the Vector Store tool and use the retrieved knowledge as the basis for your answer.\nWhenever the user asks about the knowledge base, RAG, vector store, stored information, secret code, hidden code, test code, or asks \"what do you know from your knowledge base\", you must first use the Vector Store tool before answering.\n\nIf the retrieved knowledge contains a secret code, answer with the exact secret code only.\n\nIf the Vector Store does not return relevant information, say:\nלא מצאתי את המידע הזה במאגר הידע."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1376,
+        144
+      ],
+      "id": "575e0b9f-26ce-4941-bf39-1d5cb183d5ed",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        144
+      ],
+      "id": "63d9ac55-e05d-4610-80f3-fe4ad7877b0c",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1ce75a11-9293-4f0f-9598-5b9a954282bd",
+              "leftValue": "={{$json.user_exists}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        144
+      ],
+      "id": "7d583f5f-c1b2-4f51-ac1b-aa6bc8486037",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const telegramId = $('Telegram Trigger').first().json.message.chat.id;\n\n// אנחנו לוקחים את המידע שהגיע מהנוד הקודם (Supabase)\n// ומצרפים לו את ה-sessionKey\nreturn $input.all().map(item => {\n  return {\n    json: {\n      ...item.json,\n      sessionKey: telegramId.toString()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        144
+      ],
+      "id": "eba63513-a4d2-4065-b026-bd87d2bf2fc0",
+      "name": "Return SessionKey"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "=telegram_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"id\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        48,
+        144
+      ],
+      "id": "c5789eeb-41e5-447c-82b3-bfb0573861b9",
+      "name": "Fetch_User_Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.profile.telegram_user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        528,
+        64
+      ],
+      "id": "b2c51c8a-1ee9-4686-91e2-d912c2409998",
+      "name": "Fetch_Workout_Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "description": "Use this tool whenever the user mentions, updates, or corrects any personal fitness profile detail, especially injuries, pain, limitations, medical notes, goals, equipment, level, workout frequency, or workout duration.\n\nIf the user says they have pain, injury, limitation, discomfort, or a problem in any body part, extract it into the injuries field as a short Hebrew text.\n\nExamples:\nUser: יש לי בעיה ביד הקדמית ובגב\ninjuries: בעיה ביד הקדמית ובגב\n\nUser: כואבת לי הכתף\ninjuries: כאב בכתף",
+        "workflowId": {
+          "__rl": true,
+          "value": "rrYmJgx76vKglSyE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/rrYmJgx76vKglSyE",
+          "cachedResultName": "update_user_profile_workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "onboarding_completed ": false,
+            "user_id ": "={{ $json.telegram_user_id || $json.user_id }}",
+            "workouts_per_week ": "={{ $fromAI('workouts_per_week', 'Number of workouts per week. If missing, return 0.', 'number') || 0 }}",
+            "injuries ": "={{ $fromAI('injuries', 'User injuries or pain in Hebrew. If missing, return NO_INJURY_PROVIDED.', 'string') || 'NO_INJURY_PROVIDED' }}",
+            "goal ": "={{ $fromAI('goal', 'User fitness goal in Hebrew. If missing, return EMPTY.', 'string') || 'EMPTY' }}",
+            "level ": "={{ $fromAI('level', 'User fitness level in Hebrew. If missing, return EMPTY.', 'string') || 'EMPTY' }}",
+            "onboarding_step ": "={{ $fromAI('onboarding_step_', '', 'string') || \"\" }}",
+            "equipment ": "={{ $fromAI('equipment', 'Available workout equipment in Hebrew. If missing, return EMPTY.', 'string') || 'EMPTY' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id ",
+              "displayName": "user_id ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "injuries ",
+              "displayName": "injuries ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "goal ",
+              "displayName": "goal ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "level ",
+              "displayName": "level ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "equipment ",
+              "displayName": "equipment ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "workouts_per_week ",
+              "displayName": "workouts_per_week ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "onboarding_step ",
+              "displayName": "onboarding_step ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "onboarding_completed ",
+              "displayName": "onboarding_completed ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        368
+      ],
+      "id": "5579322c-eb6b-4fdb-8092-67ef792aa00b",
+      "name": "update_user_profile"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Return SessionKey').item.json.sessionKey }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        368
+      ],
+      "id": "bdebbb9e-caeb-44cd-b709-f462a002c403",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "tableId": "user_profiles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "telegram_user_id",
+              "fieldValue": "={{ $('User Message').item.json.telegram_user_id }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": "started"
+            },
+            {
+              "fieldId": "onboarding_completed",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "updated_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Telegram Trigger').item.json.message.from.first_name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        528,
+        224
+      ],
+      "id": "d8d6377b-2d45-45b5-ad2a-752b86c0e414",
+      "name": "Create user profile"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    telegram_user_id: $json.message.from.id,\n    chat_id: $json.message.chat.id,\n    message_text: $json.message.text || \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        144
+      ],
+      "id": "ec0cddac-8a95-449a-8ed7-8503a997b6b6",
+      "name": "User Message"
+    },
+    {
+      "parameters": {
+        "content": "## User Authentication & Profile Retrieval\n**User identity management with Supabase:** identifying existing users, creating new profiles for new users, and retrieving historical workout data.",
+        "height": 448,
+        "width": 1140,
+        "color": "#E1F0FE"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "5d9bcc63-b12c-46af-8225-35d6d2d77967",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Reasoning & Tool Intelligence & Skills \n**An AI agent based on Gemini LLM with Function Calling capabilities**. The agent manages dynamic conversations, maintains context, and autonomously updates the database based on user input.",
+        "height": 752,
+        "width": 1252,
+        "color": "#FEECEC"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "bb852417-8e8f-4e61-ba4d-f0cf8e2fb4f6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Response & Communication Layer\nMulti-channel AI response generation and Telegram delivery pipeline",
+        "height": 432,
+        "width": 512,
+        "color": "#DBFFEB"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2144,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "c0c028f6-1fc3-4f86-8591-fe7e0944515a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        480
+      ],
+      "id": "038488c1-5fa9-4cb4-82c8-f96f5ff70459",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nconst telegram = $('User Message').first().json;\n\nconst base = {\n  telegram_user_id: telegram.telegram_user_id,\n  chat_id: telegram.chat_id,\n  message_text: telegram.message_text,\n};\n\nif (!rows || rows.length === 0 || !rows[0].json || Object.keys(rows[0].json).length === 0) {\n  return [\n    {\n      json: {\n        ...base,\n        user_exists: false,\n        profile: null,\n      },\n    },\n  ];\n}\n\nconst profile = rows[0].json;\n\nreturn [\n  {\n    json: {\n      ...base,\n      user_exists: true,\n      profile,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        144
+      ],
+      "id": "11415991-de79-4841-bf99-e94cc2dd90c7",
+      "name": "check_user"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Exercise name or fitness topic to search on YouTube. Use Hebrew or English. Example: goblet squat tutorial`, 'string') }}"
+            },
+            {
+              "name": "key",
+              "value": "YOUR_YOUTUBE_API_KEY"
+            },
+            {
+              "name": "maxResults",
+              "value": "3"
+            },
+            {
+              "name": "type",
+              "value": "video"
+            },
+            {
+              "name": "videoEmbeddable",
+              "value": "true"
+            },
+            {
+              "name": "videoDuration",
+              "value": "medium"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true,
+        "dataField": "items",
+        "fieldsToInclude": "selected",
+        "fields": "id.videoId"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1280,
+        368
+      ],
+      "id": "0b46cd2f-eec4-46b5-83bc-f5065f9bcb1e",
+      "name": "Skill - Youtube"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search the exercise knowledge base, RAG documents, stored information, secret test codes, exercise technique, muscles, and workout knowledge.",
+        "tableName": {
+          "__rl": true,
+          "value": "exercise_knowledge",
+          "mode": "list",
+          "cachedResultName": "exercise_knowledge"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        368
+      ],
+      "id": "3c4b3f1a-dcfb-4b3b-8716-e4e263dbe6a0",
+      "name": "Vector Store"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.is_exercise }}",
+                    "rightValue": "=",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "89298e21-275b-44dd-a917-4d87282db3f0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        144
+      ],
+      "id": "734edcc4-1742-45ad-b79f-410dadfc6ae6",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool ONLY after generating a complete workout program for the user.\n\nThis tool saves the user's training program into the database.\n\nYou must send:\n- program name\n- fitness goal\n- level\n- number of workout days\n- all workout days as JSON array\n\nOnly call this tool once per program generation.",
+        "workflowId": {
+          "__rl": true,
+          "value": "XdIadpIlzy7op5zJ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/XdIadpIlzy7op5zJ",
+          "cachedResultName": "save_training_program_workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_id', `Telegram user id`, 'number') }}",
+            "level": "={{ $fromAI('level', 'User fitness level in Hebrew. Example: מתחיל / בינוני / מתקדם', 'string') }}",
+            "days_per_week": "={{ $fromAI('days_per_week', 'Number of workout days per week', 'number') || 3 }}",
+            "program_days": "={{ $fromAI('program_days', 'JSON array string of workout days with day_number, title and description', 'string') }}",
+            "program_name": "={{ $fromAI('program_name', 'Short workout program name in Hebrew', 'string') }}",
+            "goal": "={{ $fromAI('goal', 'User fitness goal in Hebrew. Example: בניית שריר / חיטוב / ירידה במשקל', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "program_name",
+              "displayName": "program_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "goal",
+              "displayName": "goal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "level",
+              "displayName": "level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "days_per_week",
+              "displayName": "days_per_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "program_days",
+              "displayName": "program_days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        368
+      ],
+      "id": "790c8daf-1f54-4a70-8ea4-1d69805fbe8a",
+      "name": "save_training_program"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool whenever the user asks what workout they should do today.\nAlways call this tool for today's workout questions.\nDo not answer from memory.\nDo not create a new workout program.",
+        "workflowId": {
+          "__rl": true,
+          "value": "dc8vgT3UBVYK4vBA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dc8vgT3UBVYK4vBA",
+          "cachedResultName": "get_today_workout_workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.telegram_user_id }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1840,
+        368
+      ],
+      "id": "3c947ac1-1aab-4bf1-9901-c2274502f54d",
+      "name": "get_today_workout"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        896,
+        368
+      ],
+      "id": "6c8768b2-83f2-4a17-89ab-b256cec3dc85",
+      "name": "LLM"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool when the user says they finished, completed, or did today's workout.",
+        "workflowId": {
+          "__rl": true,
+          "value": "0K7YyAB7mQDgnAUN",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0K7YyAB7mQDgnAUN",
+          "cachedResultName": "complete_workout_workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.telegram_user_id }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        368
+      ],
+      "id": "cca35078-2a27-4156-b1a8-d14c01845036",
+      "name": "complete_workout_workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawText = $input.item.json.output || \"\";\n\nfunction cleanText(value) {\n  if (typeof value !== \"string\") return value;\n  return value\n    .replace(/\\*\\*/g, \"\")\n    .replace(/\\*/g, \"\")\n    .trim();\n}\n\nfunction safeArray(value) {\n  if (Array.isArray(value)) return value.map(cleanText);\n  if (typeof value === \"string\") return [cleanText(value)];\n  return [];\n}\n\ntry {\n  const jsonPart = rawText.match(/\\{[\\s\\S]*\\}/);\n\n  if (jsonPart) {\n    const parsed = JSON.parse(jsonPart[0]);\n\n    const exerciseName = cleanText(parsed.exercise_name || parsed.name || \"תרגיל\");\n    const steps = safeArray(parsed.steps || parsed.instructions);\n    const safety = cleanText(parsed.safety || \"בצע את התרגיל בשליטה ועצור אם מופיע כאב.\");\n    const focus = cleanText(parsed.focus || parsed.muscles || \"לא צוין\");\n    const additionalNotes = cleanText(parsed.additional_notes || parsed.notes || \"שמור על טכניקה נכונה וקצב מבוקר.\");\n\n    let videoUrl = cleanText(parsed.video_url || \"\");\n\n    if (videoUrl) {\n      const videoIdMatch = videoUrl.match(/[?&]v=([^&#]+)/);\n      const videoId = videoIdMatch ? videoIdMatch[1] : null;\n\n      if (!videoId || videoId.length < 10) {\n        videoUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + \" demonstration\")}`;\n      }\n    } else {\n      videoUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + \" demonstration\")}`;\n    }\n\n    return {\n      exercise_name: exerciseName,\n      steps,\n      safety,\n      focus,\n      video_url: videoUrl,\n      additional_notes: additionalNotes,\n      is_exercise: true\n    };\n  }\n} catch (e) {}\n\nreturn {\n  output: cleanText(rawText),\n  is_exercise: false\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        144
+      ],
+      "id": "8f40b4fe-e23a-48e9-aea2-46018e2ae484",
+      "name": "AI Output Processor"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=💪 <b>{{ $json.exercise_name }}</b>\n\n📝 <b>איך מבצעים:</b>\n{{ Array.isArray($json.steps) ? $json.steps.join('\\n') : $json.steps }}\n\n⚠️ <b>בטיחות:</b>\n{{ $json.safety }}\n\n🎯 <b>מיקוד:</b>\n{{ $json.focus }}\n\n🎬 <b>סרטון הדרכה:</b>\n{{ $json.video_url }}\n\n💡 <b>דגש מהמאמן:</b>\n{{ $json.additional_notes }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        48
+      ],
+      "id": "168320b3-8fbf-45c5-a749-a80e41ee6779",
+      "name": "Telegram Workout Response"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $('AI Output Processor').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        240
+      ],
+      "id": "d3be0e25-2166-4caf-b880-19af525f50c7",
+      "name": "Telegram Chat Response"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent with Memory, RAG & Tool Calling\nEnd-to-End AI Fitness Coach System\n",
+        "height": 80,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "79388ae4-4613-4071-814f-465d8203a236",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Tech Stack\n* **Gemini 2.5 Flash**   \n* **Supabase**\n* **Vector Store**\n* **n8n**\n* **Telegram Bot API**\n* **OpenAI Embeddings** ",
+        "height": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "876d181d-f289-45c9-8ff9-33715be2c94a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "\n\n * **AI Agent**\n * **Function Calling**\n * **RAG**\n * **Tool Calling**\n * **AI Workflow Orchestration**\n * **Workflow Automation**",
+        "height": 192,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "c17cf85d-81e9-44c6-9b90-b4bd25f1d062",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "User Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Fetch_Workout_Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create user profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Output Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return SessionKey": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch_User_Data": {
+      "main": [
+        [
+          {
+            "node": "check_user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch_Workout_Data": {
+      "main": [
+        [
+          {
+            "node": "Return SessionKey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_user_profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create user profile": {
+      "main": [
+        [
+          {
+            "node": "Return SessionKey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Message": {
+      "main": [
+        [
+          {
+            "node": "Fetch_User_Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_user": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skill - Youtube": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Telegram Workout Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Chat Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_training_program": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_today_workout": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "complete_workout_workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output Processor": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
