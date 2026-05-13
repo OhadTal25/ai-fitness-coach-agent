@@ -1,0 +1,153 @@
+{
+  "name": "update_user_profile_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "injuries",
+              "fieldValue": "={{ $json.injuries }}"
+            },
+            {
+              "fieldId": "goal",
+              "fieldValue": "={{ $json.goal }}"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "={{ $json.level }}"
+            },
+            {
+              "fieldId": "equipment",
+              "fieldValue": "={{ $json.equipment }}"
+            },
+            {
+              "fieldId": "workouts_per_week",
+              "fieldValue": "={{ $json.workouts_per_week }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": "={{ $json.onboarding_step }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        688,
+        352
+      ],
+      "id": "f27ab4e6-af4a-40ec-afe6-7e95007fa646",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "61274992-ad81-4785-a623-dc21b23bbb40",
+              "name": "response",
+              "value": "Profile updated successfully",
+              "type": "string"
+            },
+            {
+              "id": "2d5bf1f8-d275-4c23-914a-85575f8057b2",
+              "name": "response ",
+              "value": "הפרופיל עודכן בהצלחה",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        352
+      ],
+      "id": "0b1f978c-a77e-4c44-9080-420faf7adeae",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst clean = {};\n\nclean.user_id = input['user_id '];\n\nif (\n  input['injuries '] &&\n  input['injuries '] !== 'NO_INJURY_PROVIDED'\n) {\n  clean.injuries = input['injuries '];\n}\n\nif (\n  input['goal '] &&\n  input['goal '] !== 'EMPTY'\n) {\n  clean.goal = input['goal '];\n}\n\nif (\n  input['level '] &&\n  input['level '] !== 'EMPTY'\n) {\n  clean.level = input['level '];\n}\n\nif (\n  input['equipment '] &&\n  input['equipment '] !== 'EMPTY'\n) {\n  clean.equipment = input['equipment '];\n}\n\nif (\n  input['onboarding_step_ '] &&\n  input['onboarding_step_ '] !== 'EMPTY'\n) {\n  clean.onboarding_step = input['onboarding_step_ '];\n}\n\nif (\n  input['workouts_per_week '] !== undefined &&\n  input['workouts_per_week '] !== null\n) {\n  const n = Number(input['workouts_per_week ']);\n\n  if (!Number.isNaN(n) && n > 0) {\n    clean.workouts_per_week = n;\n  }\n}\n\nreturn [\n  {\n    json: clean\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        352
+      ],
+      "id": "2f72c3d6-925a-462d-abd9-f2c2a07ac0a5",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "tags": []
+}

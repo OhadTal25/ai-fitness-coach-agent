@@ -1,0 +1,207 @@
+{
+  "name": "RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 📚 Load Data Flow",
+        "height": 460,
+        "width": 1140,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "a0a9d24c-45be-45f7-afd0-1ce3f34f77b5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "**RAG**\n",
+        "height": 80,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "7c58b50d-da21-4f63-a0fd-cf7f6a9bad9b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "dfcae695-5ced-482b-a5a2-03fc56579982",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        128
+      ],
+      "id": "310eaec2-72e3-4d18-b0fe-6bfd2168cf38",
+      "name": "Embeddings OpenAI1",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "const exercises = [\n\n  {\n    name: \"Squat\",\n    muscles: [\"legs\", \"glutes\"],\n    content: \"Squat is a lower-body strength exercise that targets the legs and glutes. Key technique: keep the back straight, knees aligned with the toes, push the hips backward, and lower with control.\"\n  },\n  {\n    name: \"Push Up\",\n    muscles: [\"chest\", \"shoulders\", \"triceps\"],\n    content: \"Push Up is a bodyweight upper-body exercise that targets the chest, shoulders, and triceps. Key technique: keep the body in a straight line, lower the chest toward the floor, and push up with control.\"\n  },\n  {\n    name: \"Plank\",\n    muscles: [\"core\", \"abs\"],\n    content: \"Plank is a core stability exercise that targets the abs and deep core muscles. Key technique: keep the body straight, avoid dropping the hips, and breathe steadily.\"\n  }\n];\n\nreturn exercises.map(exercise => ({\n  json: {\n    content: exercise.content,\n    name: exercise.name,\n    muscles: exercise.muscles,\n    metadata: {\n      name: exercise.name,\n      muscles: exercise.muscles,\n      type: \"exercise_or_test\"\n    }\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "cec594ec-1d20-4728-89a3-104e1657760a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "exercise_knowledge",
+          "mode": "list",
+          "cachedResultName": "exercise_knowledge"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "d3e0fd64-8dbd-4589-afb6-3ad5838f05db",
+      "name": "Supabase Vector Store1",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.content }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "name",
+                "value": "={{ $json.name }}"
+              },
+              {
+                "name": "muscles",
+                "value": "={{ $json.muscles.join(\", \") }}"
+              },
+              {
+                "name": "type",
+                "value": "exercise"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        128
+      ],
+      "id": "8b1503f4-8f36-451a-aa9d-96f659609c8a",
+      "name": "Default Data Loader1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "user_id": null
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "DFbTATaLwBN5UWAh",
+  "tags": []
+}

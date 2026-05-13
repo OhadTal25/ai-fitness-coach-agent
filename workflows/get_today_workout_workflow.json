@@ -1,0 +1,138 @@
+{
+  "name": "get_today_workout_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ddc0d454-7b58-4680-bc32-e411e4ddf2a3",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a9258ba4-76c8-4f75-b2e3-8293e79490c1",
+              "name": "response",
+              "value": "={{ '🔥 האימון שלך להיום:\\n\\n' + $('Get Today Workout').first().json.title + '\\n\\n' + $('Get Today Workout').first().json.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        0
+      ],
+      "id": "3c30a2c4-be29-4c4b-90fe-e967b2edc256",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "keyValue": "={{ $('When Executed by Another Workflow').first().json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "cff424f8-9a5b-4434-be47-c7f50792573d",
+      "name": "Get Current Program"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "program_days",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "program_id",
+              "keyValue": "={{ $('Get Current Program').first().json.current_program_id }}"
+            },
+            {
+              "keyName": "day_number",
+              "keyValue": "={{ $('Get Current Program').first().json.current_day_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "469d2136-04cd-475a-94eb-a065a14c94fd",
+      "name": "Get Today Workout"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get Current Program",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Program": {
+      "main": [
+        [
+          {
+            "node": "Get Today Workout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Workout": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

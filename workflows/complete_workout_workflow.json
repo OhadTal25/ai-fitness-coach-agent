@@ -1,0 +1,171 @@
+{
+  "name": "complete_workout_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "23930c4f-7316-4287-90d2-9b76dec3cc8d",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7ac42ef4-b384-429b-abb4-f656de693fac",
+      "name": "Get a row"
+    },
+    {
+      "parameters": {
+        "jsCode": "const user = $('Get a row').first().json;\n\nconst currentDay = Number(user.current_day_number || 1);\nconst daysPerWeek = Number(user.workouts_per_week || 3);\n\nlet nextDay = currentDay + 1;\n\nif (nextDay > daysPerWeek) {\n  nextDay = 1;\n}\n\nreturn [\n  {\n    json: {\n      user_id: user.telegram_user_id,\n      current_day_number: nextDay,\n      last_workout_date: new Date().toISOString().split('T')[0],\n      completed_day: currentDay\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "39336305-a9f4-4877-9f8f-a32334e15f43",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "user_profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "current_day_number",
+              "fieldValue": "={{ $json.current_day_number }}"
+            },
+            {
+              "fieldId": "last_workout_date",
+              "fieldValue": "={{ $json.last_workout_date }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "16742912-c56f-4ebb-80a4-49237de50137",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "96308e64-4fa1-4463-9b0f-e0cd4d5954c9",
+              "name": "response",
+              "value": "={{ 'כל הכבוד! סימנתי שסיימת את יום ' + $('Code in JavaScript').first().json.completed_day + '.\\n\\nהאימון הבא שלך יהיה יום ' + $('Code in JavaScript').first().json.current_day_number + '.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "87f5bed2-75b5-4461-9d0b-3e0569fd06ee",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
