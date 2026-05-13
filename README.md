@@ -23,11 +23,13 @@ The system acts as a personal fitness assistant that can onboard users, remember
 ## Tech Stack
 
 - n8n
-- Google Gemini
+- LLM (Gemini)
 - Telegram Bot API
 - Supabase
 - Supabase Vector Store
 - OpenAI Embeddings
+- Skills
+- Tools
 - JavaScript Code Nodes
 
 ## Workflows
