@@ -85,7 +85,3 @@ This project uses Supabase tables for:
 - Training programs
 - Program days
 - Exercise knowledge for RAG
-
-## Status
-
-Portfolio / Proof of Concept project.
