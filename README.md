@@ -10,7 +10,7 @@ The system acts as a personal fitness assistant that can onboard users, remember
 ![Main Workflow](assets/main-workflow.png)
 ## Demo
 
-![Demo](assets/demo.gif)
+![Demo](assets/demo (2).gif)
 
 
 ## Features
