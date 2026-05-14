@@ -9,6 +9,10 @@ The system acts as a personal fitness assistant that can onboard users, remember
 
 ![Main Workflow](assets/main-workflow.png)
 
+## Main Workflow
+
+![Main Workflow](assets/demo_small.mp4)
+
 ## Features
 
 - Telegram-based fitness chatbot
