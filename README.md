@@ -8,10 +8,9 @@ The system acts as a personal fitness assistant that can onboard users, remember
 ## Main Workflow
 
 ![Main Workflow](assets/main-workflow.png)
+## Demo
 
-## Main Workflow
-
-![Main Workflow](assets/demo (2).gif)
+![Demo](assets/demo.gif)
 
 ## Main Workflow
 
